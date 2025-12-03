@@ -3,6 +3,16 @@ import mysql.connector
 
 
 def agregar_producto(mydb, datos_producto: dict)-> bool:
+    """
+    Agrega un nuevo producto a la base de datos.
+
+    Parámetros:
+    mydb -- Conexión a la base de datos.
+    datos_producto -- Diccionario con los datos del producto a agregar.
+
+    Retorna:
+    True si el producto fue agregado exitosamente, False en caso contrario.
+    """
     
     if datos_producto is None:
         raise ValueError("No se proporcionaron datos para agregar el producto.")
@@ -14,7 +24,7 @@ def agregar_producto(mydb, datos_producto: dict)-> bool:
     try:
         with mydb.cursor() as cursor:
 
-            sql_producto = """
+            sql = """
             INSERT INTO productos (nombre, descripcion, precio_unitario, stock, categoria_id)
             VALUES (%s, %s, %s, %s, %s)
             """
@@ -27,7 +37,7 @@ def agregar_producto(mydb, datos_producto: dict)-> bool:
                 datos_producto["categoria_id"]
             )
             
-            cursor.execute(sql_producto, valores_producto)
+            cursor.execute(sql, valores_producto)
             mydb.commit()
             return True 
     except mysql.connector.Error as err:
@@ -42,6 +52,10 @@ def agregar_producto(mydb, datos_producto: dict)-> bool:
 def obtener_todos_productos(mydb) -> list:
     """
     Consulta la base de datos para obtener la lista de todos los productos.
+
+    Parámetros:
+    mydb -- Conexión a la base de datos.
+
     Retorna una lista de tuplas con los datos de los productos o una lista vacía si falla.
     """
     if mydb is None or not mydb.is_connected():
@@ -66,11 +80,19 @@ def obtener_todos_productos(mydb) -> list:
 def obtener_producto_por_id(mydb, producto_id: int) -> tuple | None:
     """
     Busca un producto por su ID en la base de datos.
+    
+    Parámetros:
+    mydb -- Conexión a la base de datos.
+    producto_id -- ID del producto a buscar.
+
     Retorna una tupla con los datos del producto o None si no se encuentra.
     """
     if mydb is None or not mydb.is_connected():
         print("Error: Conexión a la base de datos no disponible.")
         return None
+
+    if not isinstance(producto_id, int) or producto_id <= 0:
+        raise ValueError("El ID del producto debe ser un entero positivo.")
 
     try:
         with mydb.cursor() as cursor:
@@ -102,12 +124,19 @@ def obtener_producto_por_id(mydb, producto_id: int) -> tuple | None:
 def actualizar_producto(mydb, datos_producto: dict)->bool:
     """
     Función para actualizar un producto existente en la base de datos.
+
+    Parámetros:
+    mydb -- Conexión a la base de datos.
+    datos_producto -- Diccionario con los datos actualizados del producto.
+
     Retorna True si la actualización fue exitosa, False en caso contrario.
     """
     
     if datos_producto is None:
-        print("Error: No se proporcionaron datos para actualizar el producto.")
-        return False
+        raise ValueError("No se proporcionaron datos para actualizar el producto.")
+
+    if not isinstance(datos_producto, dict):
+        raise ValueError("Los datos del producto deben proporcionarse en un diccionario.")
 
     id_producto = datos_producto["producto_id"]
 
@@ -150,6 +179,9 @@ def eliminar_producto(mydb, producto_id: int)->bool:
     if mydb is None or not mydb.is_connected():
         print("Error: Conexión a la base de datos no disponible.")
         return False
+    
+    if not isinstance(producto_id, int) or producto_id <= 0:
+        raise ValueError("El ID del producto debe ser un entero positivo.")
     
     try:
         if obtener_producto_por_id(mydb, producto_id) is None:
