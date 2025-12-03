@@ -207,3 +207,36 @@ def eliminar_producto(mydb, producto_id: int)->bool:
         return False
 
 
+def actualizar_precio_producto(mydb, producto_id: int, nuevo_precio: float) -> bool:
+    """
+    Actualiza el precio unitario de un producto en la base de datos.
+
+    Parámetros:
+    mydb -- Conexión a la base de datos.
+    producto_id -- ID del producto cuyo precio se va a actualizar.
+    nuevo_precio -- Nuevo precio unitario del producto.
+
+    Retorna:
+    True si el precio fue actualizado exitosamente, False en caso contrario.
+    """
+
+    if mydb is None or not mydb.is_connected():
+        print("Error: Conexión a la base de datos no disponible.")
+        return False
+    
+    if not isinstance(producto_id, int) or producto_id <= 0:
+        raise ValueError("El ID del producto debe ser un entero positivo.")
+    
+    if not isinstance(nuevo_precio, (int, float)) or nuevo_precio < 0:
+        raise ValueError("El nuevo precio debe ser un número no negativo.")
+    
+    try:
+        with mydb.cursor() as cursor:
+            sql = "UPDATE productos SET precio_unitario = %s WHERE producto_id = %s"
+            val = (nuevo_precio, producto_id)
+            cursor.execute(sql, val)
+            mydb.commit()
+            return True
+    except Exception as e:
+        print(f"Error al actualizar el precio del producto: {e}")
+        return False

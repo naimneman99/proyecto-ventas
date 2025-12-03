@@ -1,6 +1,7 @@
 from CLI.productos_cli import pedir_datos_producto
 from CLI.clientes_cli import pedir_datos_cliente, pedir_datos_contacto
-from CRUD_DB.crud_productos import agregar_producto, obtener_todos_productos, eliminar_producto, actualizar_producto, obtener_producto_por_id
+
+from CRUD_DB.crud_productos import actualizar_precio_producto, agregar_producto, obtener_todos_productos, eliminar_producto, actualizar_producto, obtener_producto_por_id
 from CRUD_DB.crud_clientes import actualizar_cliente, actualizar_contacto, agregar_cliente, obtener_cliente_por_id, obtener_todos_clientes
 from CRUD_DB.crud_ordenes import obtener_clientes_con_mas_ordenes, obtener_orden_por_cliente, obtener_productos_mas_vendidos
 
@@ -414,7 +415,7 @@ def menu_inicio(mydb) -> bool:
         print("2. Gestionar Clientes")
         print("3. Procesamiento de Órdenes")
         print("4. Búsquedas Avanzadas")
-        print("5. Reporte de Productos Más Vendidos")
+        print("5. Reporte del Producto Más Vendido")
         print("6. Modificación de Valor de un Producto")
         print("0. Salir")
         
@@ -469,6 +470,38 @@ def menu_inicio(mydb) -> bool:
         elif eleccion == '4':
             menu_busquedas_avanzadas(mydb)
 
+        elif eleccion == '5':
+            console_clear()
+            print("------- REPORTE DEL PRODUCTO MÁS VENDIDO -------")
+            
+            try:
+                productos_mas_vendidos = obtener_productos_mas_vendidos(mydb, limite=1)
+                
+                if productos_mas_vendidos == []:
+                    print("No hay productos registrados en la base de datos.")
+                    input("Presione ENTER para continuar...")
+                    continue
+
+                producto = productos_mas_vendidos[0]
+
+                print(f"""
+                        Producto ID: {producto['producto_id']}, 
+                        Nombre: {producto['nombre_producto']}, 
+                        Cantidad Total Vendida: {producto['total_vendido']}
+                    """)
+                
+            except Exception as e:
+                print(f"Error inesperado al obtener el producto más vendido: {e}")
+                input("Presione ENTER para continuar...")
+            
+            input("Presione ENTER para continuar...")
+
+        elif eleccion == '6':
+
+            # Modificación de Valor de un Producto
+            console_clear()
+            print("------- Modificación de Valor de un Producto -------")
+       
         elif eleccion == '0':
             print("Saliendo del programa...")
             salir = True
