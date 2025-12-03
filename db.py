@@ -20,6 +20,8 @@ def conectar():
 
 
 
+
+
 def desconectar(mybd):
     if mybd.is_connected():
         mybd.close()

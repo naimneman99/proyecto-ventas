@@ -2,6 +2,7 @@ from CLI.productos_cli import pedir_datos_producto
 from CLI.clientes_cli import pedir_datos_cliente, pedir_datos_contacto
 from CRUD_DB.crud_productos import agregar_producto, obtener_todos_productos, eliminar_producto, actualizar_producto, obtener_producto_por_id
 from CRUD_DB.crud_clientes import actualizar_cliente, actualizar_contacto, agregar_cliente, obtener_cliente_por_id, obtener_todos_clientes
+from CRUD_DB.crud_ordenes import obtener_clientes_con_mas_ordenes, obtener_orden_por_cliente, obtener_productos_mas_vendidos
 
 def console_clear():
     import os
@@ -318,11 +319,82 @@ def menu_clientes(mydb):
             input("Presione ENTER para continuar...")
             
         elif eleccion == '0':
-            return # Rompemos el bucle WHILE para volver a menu_inicio()
+            return
             
         else:
             print("Funcionalidad no implementada aún.")
             input("Presione ENTER para continuar...")
+
+
+# Menu de búsquedas avanzadas
+def menu_busquedas_avanzadas(mydb):
+    while True:
+        console_clear()
+        print("------- Gestión de Clientes -------")
+        print("1. Obtener los productos más vendidos")
+        print("2. Obtener los clientes con más órdenes")
+        print("0. Volver al Menú Principal")
+        
+        eleccion = input("Seleccione una opción: ")
+
+
+        if eleccion == '1':
+            console_clear()
+            print("------- PRODUCTOS MÁS VENDIDOS -------")
+            
+            try:
+                productos_mas_vendidos = obtener_productos_mas_vendidos(mydb)
+                
+                if productos_mas_vendidos == []:
+                    print("No hay productos registrados en la base de datos.")
+                    input("Presione ENTER para continuar...")
+                    continue
+
+                for producto in productos_mas_vendidos:
+                    print(f"""
+                            Producto ID: {producto['producto_id']}, 
+                            Nombre: {producto['nombre_producto']}, 
+                            Cantidad Total Vendida: {producto['total_vendido']}
+                        """)
+
+            except Exception as e:
+                print(f"Error inesperado al obtener los productos más vendidos: {e}")
+                
+            input("Presione ENTER para continuar...")
+
+        elif eleccion == '2':
+            console_clear()
+            print("------- CLIENTES CON MÁS ÓRDENES -------")
+        
+            try:
+                clientes = obtener_clientes_con_mas_ordenes(mydb)
+
+                if clientes == []:
+                    print("No hay clientes registrados en la base de datos.")
+                    input("Presione ENTER para continuar...")
+                    continue
+
+                for cliente in clientes:
+                    print(f"""
+                            Nombre Completo: {cliente['nombre_completo']}, 
+                            Cliente ID: {cliente['cliente_id']}, 
+                            Cantidad de Órdenes: {cliente['total_ordenes']}
+                        """)
+                         
+            except ValueError:
+                print("Error: ID inválido. Debe ser un número entero.")
+
+            input("Presione ENTER para continuar...")
+
+
+        elif eleccion == '0':
+            return
+            
+        else:
+            print("Funcionalidad no implementada aún.")
+            input("Presione ENTER para continuar...")
+        
+
 
 # --- MENÚ PRINCIPAL ---
 def menu_inicio(mydb) -> bool:
@@ -330,9 +402,20 @@ def menu_inicio(mydb) -> bool:
     salir = False
     
     while not salir:
+
+        """
+        3. Procesamiento de Órdenes: Mostrar las órdenes pedidas por un cliente dado.
+        4. Búsquedas Avanzadas: Recuperar productos o clientes con filtros (e.g., productos más vendidos).
+        5. Reporte de productos más vendidos: Generar un reporte del producto más vendido indicando la cantidad total pedida de ese producto.
+        6. Modificiación de valor de un producto: Modificar las órdenes de un producto dado para ajustarse una cierta cantidad máxima.
+        """
         print("------- Gestión del Sistema de Ventas en Línea -------")
         print("1. Gestionar Productos")
         print("2. Gestionar Clientes")
+        print("3. Procesamiento de Órdenes")
+        print("4. Búsquedas Avanzadas")
+        print("5. Reporte de Productos Más Vendidos")
+        print("6. Modificación de Valor de un Producto")
         print("0. Salir")
         
         eleccion = input("Seleccione una opción: ")
@@ -340,9 +423,51 @@ def menu_inicio(mydb) -> bool:
         if eleccion == '1':
             menu_productos(mydb)
 
-        if eleccion == '2':
+        elif eleccion == '2':
             menu_clientes(mydb)
 
+        elif eleccion == '3':
+            console_clear()
+            print("--- Procesamiento de Órdenes ---")
+
+            try:
+                id_cliente = int(input("Ingrese el ID del cliente para ver sus órdenes: "))
+
+                cliente_seleccionado = obtener_cliente_por_id(mydb, id_cliente)
+                if cliente_seleccionado is None:
+                    print(f"No se encontró un cliente con ID {id_cliente}.")
+                    input("Presione ENTER para continuar...")
+                    continue
+
+                orden = obtener_orden_por_cliente(mydb, id_cliente)
+    
+            except ValueError:
+                print("Error: ID inválido. Debe ser un número entero.")
+                salir = True
+
+            if orden == []:
+                print("No hay órdenes registradas para este cliente.")
+                input("Presione ENTER para continuar...")
+                continue
+
+            print(f" --- Ordenes para el cliente: {orden[0]['nombre_completo_cliente']} --- ")
+            for orden_detalle in orden:
+                print(f"""
+                    Orden ID: {orden_detalle['orden_id']}, 
+                    Fecha: {orden_detalle['fecha']}, 
+                    Tipo de Pago: {orden_detalle['tipo_pago']}, 
+                    Estado: {orden_detalle['estado']}, 
+                    Monto Total: {orden_detalle['monto_total']}
+                    Producto: {orden_detalle['nombre_producto']}, 
+                    Descripción: {orden_detalle['descripcion_producto']}, 
+                    Cantidad: {orden_detalle['cantidad']},
+                    Precio al Momento de la Orden: {orden_detalle['precio_al_momento']}
+                    """)
+
+            input("Presione ENTER para continuar...")
+        
+        elif eleccion == '4':
+            menu_busquedas_avanzadas(mydb)
 
         elif eleccion == '0':
             print("Saliendo del programa...")

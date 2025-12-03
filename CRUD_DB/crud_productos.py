@@ -71,6 +71,10 @@ def obtener_todos_productos(mydb) -> list:
             """
             cursor.execute(sql)
             productos = cursor.fetchall()
+
+            if not productos:
+                return []
+
             return productos          
     except Exception as e:
         print(f"Error al obtener productos de la BD: {e}")
@@ -115,6 +119,10 @@ def obtener_producto_por_id(mydb, producto_id: int) -> tuple | None:
             val = (producto_id,)
             cursor.execute(sql, val)
             producto = cursor.fetchone()
+
+            if producto is None:
+                return None
+
             return producto          
     except Exception as e:
         print(f"Error al buscar producto en la BD: {e}")

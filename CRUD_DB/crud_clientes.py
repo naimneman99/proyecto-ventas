@@ -62,6 +62,10 @@ def obtener_todos_clientes(mydb) -> list:
             sql = "SELECT cliente_id, nombre, apellido, domicilio, telefono, correo_electronico FROM clientes"
             cursor.execute(sql)
             clientes = cursor.fetchall()
+
+            if not clientes:
+                return []
+
             return clientes
     except Exception as e:
         print(f"Error al obtener los clientes: {e}")
@@ -90,6 +94,10 @@ def obtener_cliente_por_id(mydb, cliente_id: int) -> tuple | None:
             sql = "SELECT cliente_id, nombre, apellido, domicilio, telefono, correo_electronico FROM clientes WHERE cliente_id = %s"
             cursor.execute(sql, (cliente_id,))
             cliente = cursor.fetchone()
+
+            if cliente is None:
+                return None
+
             return cliente
     except Exception as e:
         print(f"Error al obtener el cliente: {e}")
@@ -178,7 +186,7 @@ def actualizar_contacto(mydb, datos_contacto: dict) -> bool:
                 datos_contacto["correo_electronico"],
                 cliente_id
             )
-            
+
             cursor.execute(sql, val)
             mydb.commit()
             return True
