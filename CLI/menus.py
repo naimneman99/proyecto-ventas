@@ -6,6 +6,9 @@ from CRUD_DB.crud_clientes import actualizar_cliente, actualizar_contacto, agreg
 from CRUD_DB.crud_ordenes import obtener_clientes_con_mas_ordenes, obtener_orden_por_cliente, obtener_productos_mas_vendidos, modificar_valor_producto
 
 def console_clear():
+    """
+    Limpia la consola.
+    """
     import os
     os.system('cls' if os.name == 'nt' else 'clear') 
 
