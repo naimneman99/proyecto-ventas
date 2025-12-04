@@ -1,9 +1,9 @@
-from CLI.productos_cli import pedir_datos_producto
+from CLI.productos_cli import gestionar_seleccion_categoria, pedir_datos_producto
 from CLI.clientes_cli import pedir_datos_cliente, pedir_datos_contacto
 
-from CRUD_DB.crud_productos import actualizar_precio_producto, agregar_producto, obtener_todos_productos, eliminar_producto, actualizar_producto, obtener_producto_por_id
-from CRUD_DB.crud_clientes import actualizar_cliente, actualizar_contacto, agregar_cliente, obtener_cliente_por_id, obtener_todos_clientes
-from CRUD_DB.crud_ordenes import obtener_clientes_con_mas_ordenes, obtener_orden_por_cliente, obtener_productos_mas_vendidos
+from CRUD_DB.crud_productos import agregar_producto, obtener_todos_productos, eliminar_producto, actualizar_producto, obtener_producto_por_id, obtener_productos_por_nombre_parcial, obtener_productos_por_categoria
+from CRUD_DB.crud_clientes import actualizar_cliente, actualizar_contacto, agregar_cliente, obtener_cliente_por_id, obtener_todos_clientes, obtener_clientes_por_nombre_parcial
+from CRUD_DB.crud_ordenes import obtener_clientes_con_mas_ordenes, obtener_orden_por_cliente, obtener_productos_mas_vendidos, modificar_valor_producto
 
 def console_clear():
     import os
@@ -332,14 +332,114 @@ def menu_busquedas_avanzadas(mydb):
     while True:
         console_clear()
         print("------- Gestión de Clientes -------")
-        print("1. Obtener los productos más vendidos")
-        print("2. Obtener los clientes con más órdenes")
+        print("1. Buscar Clientes por Nombre o Apellido")
+        print("2. Buscar Productos por Nombre")
+        print("3. Buscar Productos por Categoría")
+        print("4. Obtener los productos más vendidos")
+        print("5. Obtener los clientes con más órdenes")
         print("0. Volver al Menú Principal")
         
         eleccion = input("Seleccione una opción: ")
 
-
         if eleccion == '1':
+            console_clear()
+            print("------- BÚSQUEDA DE CLIENTES POR NOMBRE O APELLIDO -------")
+
+            texto_busqueda = input("Ingrese parte del nombre o apellido del cliente a buscar: ").strip()
+            
+            if not texto_busqueda:
+                print("Debe ingresar un texto de búsqueda. Intente nuevamente.")
+                input("Presione ENTER para continuar...")
+                continue
+
+            try:
+                clientes_encontrados = obtener_clientes_por_nombre_parcial(mydb, texto_busqueda)
+                
+                if not clientes_encontrados:
+                    print(f"No se encontraron clientes que contengan '{texto_busqueda}' en su nombre o apellido.")
+                    input("Presione ENTER para continuar...")
+                    continue
+                    
+                
+                print(f"\n--- Resultados de Búsqueda para '{texto_busqueda}' ---")
+                print(f"{'ID':<5} {'Nombre':<20} {'Apellido':<20} {'Domicilio':<30} {'Teléfono':<15} {'Email':<30}")
+                print("-" * 90)
+                for cliente in clientes_encontrados:
+                    cliente_id, nombre, apellido, domicilio, telefono, correo_electronico = cliente
+                    print(f"{cliente_id:<5} {nombre:<20} {apellido:<20} {domicilio:<30} {telefono:<15} {correo_electronico:<30}")
+
+            except Exception as e:
+                print(f"Error al realizar la búsqueda: {e}")
+                
+            input("Presione ENTER para continuar...")
+
+        elif eleccion == '2':
+            console_clear()
+            print("------- BÚSQUEDA DE PRODUCTOS POR NOMBRE -------")
+
+            texto_busqueda = input("Ingrese parte del nombre del producto a buscar: ").strip()
+            
+            if not texto_busqueda:
+                print("Debe ingresar un texto de búsqueda. Intente nuevamente.")
+                input("Presione ENTER para continuar...")
+                continue
+
+            try:
+                productos_encontrados = obtener_productos_por_nombre_parcial(mydb, texto_busqueda)
+                
+                if not productos_encontrados:
+                    print(f"No se encontraron productos que contengan '{texto_busqueda}' en su nombre.")
+                    input("Presione ENTER para continuar...")
+                    continue
+                    
+                
+                print(f"\n--- Resultados de Búsqueda para '{texto_busqueda}' ---")
+                print(f"{'ID':<5} {'Nombre':<20} {'Descripcion':<20} {'Categoria':<30} {'Precio':<15} {'Stock':<10}")
+                print("-" * 90)
+                for producto in productos_encontrados:
+                    producto_id, nombre, descripcion, categoria, precio, stock = producto
+                    print(f"{producto_id:<5} {nombre:<20} {descripcion:<20} {categoria:<30} {precio:<15} {stock:<10}")
+
+            except Exception as e:
+                print(f"Error al realizar la búsqueda: {e}")
+                
+            input("Presione ENTER para continuar...")
+
+        elif eleccion == '3':
+            console_clear()
+            print("------- BÚSQUEDA DE PRODUCTOS POR CATEGORÍA -------")
+            
+            print()
+            id_categoria_seleccionada = gestionar_seleccion_categoria(mydb)
+
+            if id_categoria_seleccionada is None:
+                print("Búsqueda cancelada por el usuario.")
+                input("Presione ENTER para continuar...")
+                continue
+
+            try:
+                productos_encontrados = obtener_productos_por_categoria(mydb, id_categoria_seleccionada)
+                
+                if not productos_encontrados:
+                    print(f"No se encontraron productos en la categoría seleccionada.")
+                    input("Presione ENTER para continuar...")
+                    continue
+                    
+                
+                print(f"\n--- Productos en la Categoría Seleccionada ---")
+                print(f"{'ID':<5} {'Nombre':<20} {'Descripcion':<20} {'Categoria':<30} {'Precio':<15} {'Stock':<10}")
+                print("-" * 90)
+                for producto in productos_encontrados:
+                    producto_id, nombre, descripcion, categoria, precio, stock = producto
+                    print(f"{producto_id:<5} {nombre:<20} {descripcion:<20} {categoria:<30} {precio:<15} {stock:<10}")
+
+            except Exception as e:
+                print(f"Error al realizar la búsqueda: {e}")
+
+            input("Presione ENTER para continuar...")    
+
+
+        elif eleccion == '4':
             console_clear()
             print("------- PRODUCTOS MÁS VENDIDOS -------")
             
@@ -363,7 +463,7 @@ def menu_busquedas_avanzadas(mydb):
                 
             input("Presione ENTER para continuar...")
 
-        elif eleccion == '2':
+        elif eleccion == '5':
             console_clear()
             print("------- CLIENTES CON MÁS ÓRDENES -------")
         
@@ -497,11 +597,21 @@ def menu_inicio(mydb) -> bool:
             input("Presione ENTER para continuar...")
 
         elif eleccion == '6':
-
-            # Modificación de Valor de un Producto
             console_clear()
-            print("------- Modificación de Valor de un Producto -------")
-       
+            print("------- MODIFICACIÓN DE VALOR DE UN PRODUCTO -------")
+            
+            try:
+                producto_id = int(input("Ingrese el ID del producto a modificar: "))
+                cantidad_maxima = int(input("Ingrese la cantidad máxima permitida: "))
+      
+                modificar_valor_producto(mydb, producto_id, cantidad_maxima)
+
+            except ValueError:
+                print("Error: El ID del producto o la cantidad máxima debe ser un número entero.")
+                input("Presione ENTER para continuar...")
+            
+            input("Presione ENTER para continuar...")
+         
         elif eleccion == '0':
             print("Saliendo del programa...")
             salir = True

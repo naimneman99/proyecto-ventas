@@ -195,6 +195,43 @@ def actualizar_contacto(mydb, datos_contacto: dict) -> bool:
         return False
 
 
+def obtener_clientes_por_nombre_parcial(mydb, texto_busqueda: str) -> list:
+    """
+    Busca clientes cuyo nombre o apellido contenga el texto de búsqueda proporcionado.
+
+    Parámetros:
+    mydb -- Conexión a la base de datos.
+    texto_busqueda -- Texto parcial para buscar en nombres y apellidos.
+
+    Retorna:
+    Una lista de tuplas con los datos de los clientes que coinciden con la búsqueda o una lista vacía si no hay coincidencias.
+    """
+
+    if mydb is None or not mydb.is_connected():
+        raise ConnectionError("No hay conexión a la base de datos.")
+    
+    if not isinstance(texto_busqueda, str) or not texto_busqueda.strip():
+        raise ValueError("El texto de búsqueda debe ser una cadena no vacía.")
+    
+    try:
+        with mydb.cursor() as cursor:
+            sql = """
+            SELECT cliente_id, nombre, apellido, domicilio, telefono, correo_electronico
+            FROM clientes
+            WHERE nombre LIKE %s OR apellido LIKE %s
+            """
+            patron_busqueda = f"%{texto_busqueda}%"
+            cursor.execute(sql, (patron_busqueda, patron_busqueda))
+            clientes = cursor.fetchall()
+
+            if not clientes:
+                return []
+
+            return clientes
+    except Exception as e:
+        print(f"Error al buscar clientes: {e}")
+        return []
+    
 
 
 

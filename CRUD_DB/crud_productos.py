@@ -206,37 +206,75 @@ def eliminar_producto(mydb, producto_id: int)->bool:
         print(f"Error al eliminar producto de la BD: {e}")
         return False
 
-
-def actualizar_precio_producto(mydb, producto_id: int, nuevo_precio: float) -> bool:
+def obtener_productos_por_nombre_parcial(mydb, texto_busqueda: str) -> list:
     """
-    Actualiza el precio unitario de un producto en la base de datos.
+    Busca productos cuyo nombre contenga el texto de búsqueda proporcionado.
 
     Parámetros:
     mydb -- Conexión a la base de datos.
-    producto_id -- ID del producto cuyo precio se va a actualizar.
-    nuevo_precio -- Nuevo precio unitario del producto.
+    texto_busqueda -- Texto parcial para buscar en los nombres de los productos.
 
     Retorna:
-    True si el precio fue actualizado exitosamente, False en caso contrario.
+    Lista de tuplas con los datos de los productos encontrados.
     """
 
     if mydb is None or not mydb.is_connected():
         print("Error: Conexión a la base de datos no disponible.")
-        return False
-    
-    if not isinstance(producto_id, int) or producto_id <= 0:
-        raise ValueError("El ID del producto debe ser un entero positivo.")
-    
-    if not isinstance(nuevo_precio, (int, float)) or nuevo_precio < 0:
-        raise ValueError("El nuevo precio debe ser un número no negativo.")
-    
+        return []
+
+    if not isinstance(texto_busqueda, str) or not texto_busqueda.strip():
+        raise ValueError("El texto de búsqueda debe ser una cadena no vacía.")
+
     try:
         with mydb.cursor() as cursor:
-            sql = "UPDATE productos SET precio_unitario = %s WHERE producto_id = %s"
-            val = (nuevo_precio, producto_id)
-            cursor.execute(sql, val)
-            mydb.commit()
-            return True
+            sql = """
+            SELECT p.producto_id, p.nombre, p.descripcion, p.precio_unitario, p.stock, c.nombre AS categoria
+            FROM productos p JOIN categorias c ON p.categoria_id = c.categoria_id
+            WHERE p.nombre LIKE %s
+            ORDER BY p.nombre
+            """
+            patron_busqueda = f"%{texto_busqueda}%"
+            cursor.execute(sql, (patron_busqueda,))
+            productos = cursor.fetchall()
+
+            return productos          
     except Exception as e:
-        print(f"Error al actualizar el precio del producto: {e}")
-        return False
+        print(f"Error al buscar productos en la BD: {e}")
+        return []
+
+def obtener_productos_por_categoria(mydb, categoria_id: int) -> list:
+    """
+    Busca productos que pertenecen a una categoría específica.
+
+    Parámetros:
+    mydb -- Conexión a la base de datos.
+    categoria_id -- ID de la categoría para filtrar los productos.
+
+    Retorna:
+    Lista de tuplas con los datos de los productos encontrados.
+    """
+
+    if mydb is None or not mydb.is_connected():
+        print("Error: Conexión a la base de datos no disponible.")
+        return []
+
+    if not isinstance(categoria_id, int) or categoria_id <= 0:
+        raise ValueError("El ID de la categoría debe ser un entero positivo.")
+
+    try:
+        with mydb.cursor() as cursor:
+            sql = """
+            SELECT p.producto_id, p.nombre, p.descripcion, p.precio_unitario, p.stock, c.nombre AS categoria
+            FROM productos p JOIN categorias c ON p.categoria_id = c.categoria_id
+            WHERE p.categoria_id = %s
+            ORDER BY p.nombre
+            """
+            cursor.execute(sql, (categoria_id,))
+            productos = cursor.fetchall()
+
+            return productos          
+    except Exception as e:
+        print(f"Error al buscar productos en la BD: {e}")
+        return []
+
+

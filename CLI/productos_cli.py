@@ -121,18 +121,18 @@ def gestionar_seleccion_categoria(mydb) -> int | None:
         try:
             indice_elegido = int(eleccion)
             
-            # 1. Manejar Cancelación
+            # Cancelar 
             if indice_elegido == 0:
-                return None # 0. Salir
+                return None 
             
-            # 2. Manejar Selección Válida
+            # Manejar opcion válida
             elif 1 <= indice_elegido <= len(categorias):
                 id_seleccionado = categorias[indice_elegido - 1][0] 
                 nombre_seleccionado = categorias[indice_elegido - 1][1]
                 print(f"-> Categoría seleccionada: {nombre_seleccionado}")
                 return id_seleccionado
             
-            # 3. Manejar Opción Fuera de Rango
+            # Manejar Opción Fuera de Rango
             else:
                 print(f"Opción no válida. El rango debe ser entre 1 y {len(categorias)}, o 0.")
 

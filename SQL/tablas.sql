@@ -79,6 +79,15 @@ CREATE TABLE DetallesOrden (
 );
 
 
+-- Índice para búsqueda rápida en Clientes por nombre y apellido
+CREATE INDEX idx_clientes_nombre_completo ON Clientes (nombre, apellido);
+
+-- Índice para búsqueda rápida en Productos por nombre
+CREATE INDEX idx_productos_nombre ON Productos (nombre);
+
+-- Índice para optimizar consultas por categoría en Productos
+CREATE INDEX idx_productos_categoria ON Productos (categoria_id);
+
 
 -- Este índice optimiza la busqueda en la tabla de órdenes
 CREATE INDEX idx_ordenes_cliente_id ON Ordenes (cliente_id);
