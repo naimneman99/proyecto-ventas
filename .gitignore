@@ -1,0 +1,4 @@
+# Archivos y Carpetas Ignoradas
+.venv/
+__pycache__/
+*.pyc
