@@ -48,5 +48,3 @@ Table DetallesOrden {
   }
 }
 
-
-Ref: "DetallesOrden"."orden_id" < "DetallesOrden"."cantidad"
